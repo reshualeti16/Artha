@@ -1,0 +1,492 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#17382e">
+  <title>Artha | Every Rupee Has a Purpose</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+</head>
+
+<body>
+<div class="app" id="arthaApp">
+
+  <aside class="sidebar" id="appSidebar">
+    <a href="#dashboard" class="brand">
+      <span class="brand-icon">₹</span>
+      <span class="brand-text">
+        Artha
+        <small>EVERY RUPEE HAS A PURPOSE</small>
+      </span>
+    </a>
+
+    <p class="nav-label">WORKSPACE</p>
+
+    <nav class="sidebar-nav" aria-label="Main navigation">
+      <a href="#dashboard" class="nav-link active">▦ <span>Dashboard</span></a>
+      <a href="#budgetPanel" class="nav-link">◉ <span>Budget Planner</span></a>
+      <a href="#chartPanel" class="nav-link">▥ <span>Spending Analytics</span></a>
+      <a href="#insightsPanel" class="nav-link">✧ <span>Smart Insights</span></a>
+      <a href="#transactionsPanel" class="nav-link">↔ <span>Transactions</span></a>
+      <a href="#importPanel" class="nav-link">⇧ <span>Import Data</span></a>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <div class="tip">
+        <div class="tip-icon">✦</div>
+        <h3>A little reminder</h3>
+        <p>Small spending decisions today can create bigger possibilities tomorrow.</p>
+      </div>
+      <p class="version">ARTHA · PERSONAL FINANCE</p>
+    </div>
+  </aside>
+
+  <main class="main" id="dashboard">
+
+    <header class="topbar">
+      <div class="header-left">
+        <button
+          class="sidebar-toggle"
+          id="sidebarToggle"
+          type="button"
+          aria-label="Close sidebar"
+          aria-expanded="true"
+          aria-controls="appSidebar"
+          title="Open or close sidebar"
+        >
+          <span class="hamburger-icon">☰</span>
+          <span class="close-icon">✕</span>
+        </button>
+
+        <div class="header-greeting">
+          <p class="eyebrow">YOUR FINANCIAL SPACE</p>
+          <h1>Good to see you <span class="wave">✳</span></h1>
+          <p class="muted">A clearer view of your money starts here.</p>
+        </div>
+      </div>
+
+      <button class="primary-btn" id="addTransactionBtn" type="button">
+        + Add Transaction
+      </button>
+    </header>
+
+    <section class="summary-grid">
+      <article class="summary-card balance-card">
+        <div class="card-top">
+          <span>Total Balance</span>
+          <span class="card-icon">₹</span>
+        </div>
+        <h2 id="totalBalance">₹0</h2>
+        <p class="card-note">Your current financial position</p>
+      </article>
+
+      <article class="summary-card">
+        <div class="card-top">
+          <span>Total Income</span>
+          <span class="card-icon income-icon">↗</span>
+        </div>
+        <h2 id="totalIncome">₹0</h2>
+        <p class="card-note">Money received this month</p>
+      </article>
+
+      <article class="summary-card">
+        <div class="card-top">
+          <span>Total Expenses</span>
+          <span class="card-icon expense-icon">↘</span>
+        </div>
+        <h2 id="totalExpenses">₹0</h2>
+        <p class="card-note">Money spent this month</p>
+      </article>
+    </section>
+
+    <section class="content-grid">
+
+      <article class="panel" id="budgetPanel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">SPENDING CONTROL</p>
+            <h2>Monthly Budget</h2>
+          </div>
+          <span class="soft-tag">This month</span>
+        </div>
+
+        <div class="budget-numbers">
+          <div>
+            <p class="muted">Spent so far</p>
+            <h3 id="budgetSpent">₹0</h3>
+          </div>
+          <div class="right">
+            <p class="muted">Monthly limit</p>
+            <h3 id="budgetLimit">₹0</h3>
+          </div>
+        </div>
+
+        <div
+          class="progress-track"
+          id="budgetProgress"
+          role="progressbar"
+          aria-label="Monthly budget used"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow="0"
+        >
+          <div class="progress-fill" id="budgetProgressFill"></div>
+        </div>
+
+        <p class="budget-caption" id="budgetMessage">
+          Set a budget to start tracking your spending.
+        </p>
+
+        <form class="budget-form" id="budgetForm">
+          <label for="budgetInput">Update monthly budget (₹)</label>
+          <div class="budget-input-row">
+            <input
+              type="number"
+              id="budgetInput"
+              min="1"
+              step="1"
+              placeholder="Enter budget"
+              required
+            >
+            <button class="secondary-btn" type="submit">Update</button>
+          </div>
+        </form>
+      </article>
+
+      <article class="panel" id="chartPanel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">WHERE IT GOES</p>
+            <h2>Spending Breakdown</h2>
+          </div>
+          <span class="soft-tag">By category</span>
+        </div>
+
+        <div class="chart-wrap">
+          <canvas
+            id="spendingChart"
+            role="img"
+            aria-label="Expenses by category"
+          ></canvas>
+          <p class="chart-empty" id="chartEmpty" hidden>
+            Add expenses to see your breakdown.
+          </p>
+        </div>
+
+        <div class="category-legend" id="categoryLegend"></div>
+      </article>
+
+    </section>
+
+    <section class="panel insights-panel" id="insightsPanel">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">YOUR MONEY, EXPLAINED</p>
+          <h2>Smart Finance Insights ✨</h2>
+        </div>
+        <span class="soft-tag">Personalised</span>
+      </div>
+
+      <div class="insights-list" id="insightsList" aria-live="polite">
+        <p class="muted">Your financial insights will appear here.</p>
+      </div>
+    </section>
+
+    <section class="panel transactions-panel" id="transactionsPanel">
+      <div class="panel-heading transactions-heading">
+        <div>
+          <p class="eyebrow">YOUR MONEY MOVEMENTS</p>
+          <h2>Recent Transactions</h2>
+        </div>
+
+        <select id="transactionFilter" aria-label="Filter transactions">
+          <option value="all">All transactions</option>
+          <option value="income">Income only</option>
+          <option value="expense">Expenses only</option>
+        </select>
+      </div>
+
+      <div class="table-wrap">
+        <table id="transactionTable">
+          <thead>
+            <tr>
+              <th>TRANSACTION</th>
+              <th>CATEGORY</th>
+              <th>DATE</th>
+              <th>AMOUNT</th>
+              <th>ACTION</th>
+            </tr>
+          </thead>
+          <tbody id="transactionBody"></tbody>
+        </table>
+
+        <div class="empty-state" id="emptyState" hidden>
+          <span>₹</span>
+          <h3>No transactions yet</h3>
+          <p>Add your first transaction to start tracking your money.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- IMPORT FINANCIAL DATA -->
+    <section class="panel import-panel" id="importPanel">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">BRING YOUR DATA TOGETHER</p>
+          <h2>Import Financial Data</h2>
+        </div>
+        <span class="soft-tag">Data tools</span>
+      </div>
+
+      <p class="muted import-description">
+        Bring your financial records into Artha and keep everything organized
+        in one place.
+      </p>
+
+      <div class="import-dropzone">
+        <div class="import-upload-icon">⇧</div>
+        <h3>Upload your financial records</h3>
+        <p class="muted">Select a file from your device to get started.</p>
+
+        <label class="primary-btn import-browse" for="importFile">
+          Choose File
+        </label>
+
+        <input
+          type="file"
+          id="importFile"
+          accept=".csv,.xlsx,.xls,.json,.txt,.pdf"
+          hidden
+        >
+
+        <p class="import-supported">
+          Supported formats: CSV, Excel, JSON, TXT and PDF
+        </p>
+      </div>
+
+      <div class="import-guidelines">
+        <span class="guidelines-icon">ⓘ</span>
+        <div>
+          <strong>For a smooth import</strong>
+          <p>
+            Files containing transaction name, amount, type, category and date
+            work best. You can review your records before importing them.
+          </p>
+        </div>
+      </div>
+
+      <div
+        class="import-status"
+        id="importStatus"
+        role="status"
+        aria-live="polite"
+      ></div>
+
+      <div class="import-mapping-area" id="importMappingArea" hidden>
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">CHECK YOUR COLUMNS</p>
+            <h2>Review Imported Data</h2>
+          </div>
+        </div>
+
+        <div class="import-mapping-grid">
+          <div>
+            <label for="mapTitle">Transaction name</label>
+            <select id="mapTitle"></select>
+          </div>
+          <div>
+            <label for="mapAmount">Amount</label>
+            <select id="mapAmount"></select>
+          </div>
+          <div>
+            <label for="mapType">Type</label>
+            <select id="mapType"></select>
+          </div>
+          <div>
+            <label for="mapCategory">Category</label>
+            <select id="mapCategory"></select>
+          </div>
+          <div>
+            <label for="mapDate">Date</label>
+            <select id="mapDate"></select>
+          </div>
+        </div>
+
+        <div class="import-preview-heading">
+          <h3>Data preview</h3>
+          <span id="importRowCount" class="soft-tag">0 rows</span>
+        </div>
+
+        <div class="table-wrap import-preview-wrap">
+          <table>
+            <thead id="importPreviewHead"></thead>
+            <tbody id="importPreviewBody"></tbody>
+          </table>
+        </div>
+
+        <p id="importValidation" class="import-help"></p>
+
+        <div class="import-actions">
+          <button
+            id="cancelImportBtn"
+            class="secondary-btn"
+            type="button"
+          >
+            Cancel
+          </button>
+          <button
+            id="confirmImportBtn"
+            class="primary-btn"
+            type="button"
+          >
+            Import Transactions
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      Made with care by <strong>Artha</strong> · Every Rupee Has a Purpose.
+    </footer>
+  </main>
+</div>
+
+<!-- ADD TRANSACTION MODAL: HIDDEN AT START -->
+<div class="modal-backdrop" id="transactionModal" hidden>
+  <section
+    class="modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modalTitle"
+  >
+    <div class="modal-heading">
+      <div>
+        <p class="eyebrow">TRACK YOUR MONEY</p>
+        <h2 id="modalTitle">Add Transaction</h2>
+      </div>
+
+      <button
+        class="close-btn"
+        id="closeModalBtn"
+        type="button"
+        aria-label="Close dialog"
+      >&times;</button>
+    </div>
+
+    <form id="transactionForm">
+      <label for="transactionTitle">Transaction name</label>
+      <input
+        type="text"
+        id="transactionTitle"
+        maxlength="80"
+        placeholder="e.g. Monthly pocket money"
+        required
+      >
+
+      <div class="form-row">
+        <div>
+          <label for="transactionType">Transaction type</label>
+          <select id="transactionType" required>
+            <option value="expense">Expense</option>
+            <option value="income">Income</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="transactionAmount">Amount (₹)</label>
+          <input
+            type="number"
+            id="transactionAmount"
+            min="0.01"
+            step="0.01"
+            placeholder="0.00"
+            required
+          >
+        </div>
+      </div>
+
+      <label for="transactionCategory">Category</label>
+      <select id="transactionCategory" required>
+        <option value="Food">Food</option>
+        <option value="Transport">Transport</option>
+        <option value="Education">Education</option>
+        <option value="Shopping">Shopping</option>
+        <option value="Entertainment">Entertainment</option>
+        <option value="Health">Health</option>
+        <option value="Bills">Bills</option>
+        <option value="Pocket Money">Pocket Money</option>
+        <option value="Salary">Salary</option>
+        <option value="Other">Other</option>
+      </select>
+
+      <label for="transactionDate">Date</label>
+      <input type="date" id="transactionDate" required>
+
+      <p class="form-error" id="formError" role="alert"></p>
+
+      <button class="primary-btn submit-btn" type="submit">
+        Save Transaction
+      </button>
+    </form>
+  </section>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="script.js"></script>
+
+<!-- SIDEBAR TOGGLE -->
+<script>
+(function () {
+  const app = document.getElementById("arthaApp");
+  const sidebar = document.getElementById("appSidebar");
+  const toggle = document.getElementById("sidebarToggle");
+
+  if (!app || !sidebar || !toggle) return;
+
+  function setSidebarHidden(hidden) {
+    app.classList.toggle("sidebar-hidden", hidden);
+
+    toggle.setAttribute("aria-expanded", String(!hidden));
+    toggle.setAttribute(
+      "aria-label",
+      hidden ? "Open sidebar" : "Close sidebar"
+    );
+    toggle.title = hidden ? "Open sidebar" : "Close sidebar";
+  }
+
+  toggle.addEventListener("click", function () {
+    const isHidden = app.classList.contains("sidebar-hidden");
+    setSidebarHidden(!isHidden);
+  });
+
+  sidebar.querySelectorAll('a[href^="#"]').forEach(function (link) {
+    link.addEventListener("click", function () {
+      if (window.innerWidth <= 680) {
+        setSidebarHidden(true);
+      }
+    });
+  });
+
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") {
+      setSidebarHidden(true);
+    }
+  });
+})();
+</script>
+
+</body>
+</html>
